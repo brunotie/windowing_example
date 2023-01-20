@@ -1,17 +1,22 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
 
-export type Ticket = {
+export interface TicketPage {
+    count: number;
+    data: Ticket[];
+}
+
+export interface Ticket {
     id: number;
     subject: string;
     priority: "Low" | "Medium" | "High";
     status: "New" | "Started" | "Finished";
     description: string;
-};
+}
 
-let tickets: Ticket[] = new Array(10000).map((d) => ({
-    id: d,
-    subject: `Ticket ${d}`,
+let tickets: Ticket[] = new Array(10000).fill(true).map((d, i) => ({
+    id: i,
+    subject: `Ticket ${i}`,
     priority: "Medium",
     status: "New",
     description: "Some text here",
@@ -28,10 +33,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
                 typeof req.query.page == "string"
                     ? Number.parseInt(req.query.page)
                     : 0;
-            const page_data = tickets
-                .sort((a, b) => a.id - b.id)
-                .slice(100 * page, 100 * (page + 1));
-
+            const page_data = tickets.slice(100 * page, 100 * (page + 1));
             res.status(200).send({ count: tickets.length, data: page_data });
         }
     } else if (req.method == "POST") {

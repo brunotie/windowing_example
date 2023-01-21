@@ -15,21 +15,23 @@ function Row({
 }
 
 export default function Home() {
-    const [ticketCount, setTicketCount] = useState<number>();
-    const [tickets, setTickets] = useState<Maybe<Ticket>[]>();
+    const [ticketCount, setTicketCount] = useState<number>(0);
+    const [tickets, setTickets] = useState<Maybe<Ticket>[]>([]);
     const [scrollPosition, setScrollPosition] = useState<number>(0);
     const ROW_HEIGHT = 40;
 
     async function fetchTickets(page: number) {
+        console.log(page);
         const res: TicketPage = await fetch(`/api/ticket?page=${page}`).then(
             (body) => body.json()
         );
         setTicketCount(res.count);
-        const ticket_results = tickets
-            ? tickets
-            : new Array(res.count).fill(undefined);
-        ticket_results.splice(page * 100, res.data.length, ...res.data);
-        setTickets(ticket_results);
+        setTickets((old_tickets) => {
+            let result = new Array(res.count).fill(undefined);
+            result.splice(0, old_tickets.length, ...old_tickets);
+            result.splice(page * 100, res.data.length, ...res.data);
+            return result;
+        });
     }
 
     useEffect(() => {
@@ -42,6 +44,25 @@ export default function Home() {
             onScroll={(e) => {
                 const target = e.target as HTMLDivElement;
                 setScrollPosition(target.scrollTop);
+
+                const beginning_element = Math.floor(
+                    target.scrollTop / ROW_HEIGHT
+                );
+                const ending_element = Math.floor(
+                    (target.scrollTop + window.innerHeight) / ROW_HEIGHT
+                );
+
+                if (!tickets[ending_element]) {
+                    const page_ending = Math.floor(ending_element / 100);
+                    const page_beginning = Math.floor(beginning_element / 100);
+                    fetchTickets(page_ending);
+                    if (
+                        page_beginning != page_ending &&
+                        !tickets[beginning_element]
+                    ) {
+                        fetchTickets(page_beginning);
+                    }
+                }
             }}
         >
             <div

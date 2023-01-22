@@ -19,7 +19,8 @@ let tickets: Ticket[] = new Array(10000).fill(true).map((d, i) => ({
     subject: `Ticket ${i}`,
     priority: "Medium",
     status: "New",
-    description: "Some text here",
+    description:
+        "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Fugiat hic necessitatibus voluptatum vel perspiciatis aperiam ea placeat iusto, architecto veniam explicabo nostrum expedita pariatur deleniti consectetur consequuntur voluptate, in molestiae.",
 }));
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -41,15 +42,14 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         if (
             "subject" in newTicket &&
             "priority" in newTicket &&
-            "status" in newTicket &&
             "description" in newTicket
         ) {
-            const nextId = tickets.reduce((d, v) => Math.max(v.id, d), 1);
-            const ticket = {
+            const nextId = tickets.reduce((d, v) => Math.max(v.id, d), 1) + 1;
+            const ticket: Ticket = {
                 id: nextId,
                 subject: newTicket.subject,
                 priority: newTicket.priority,
-                status: newTicket.status,
+                status: "New",
                 description: newTicket.description,
             };
             tickets.push(ticket);

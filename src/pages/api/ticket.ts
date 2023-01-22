@@ -37,6 +37,44 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
             res.status(200).send({ count: tickets.length, data: page_data });
         }
     } else if (req.method == "POST") {
+        const newTicket = JSON.parse(req.body);
+        if (
+            "subject" in newTicket &&
+            "priority" in newTicket &&
+            "status" in newTicket &&
+            "description" in newTicket
+        ) {
+            const nextId = tickets.reduce((d, v) => Math.max(v.id, d), 1);
+            const ticket = {
+                id: nextId,
+                subject: newTicket.subject,
+                priority: newTicket.priority,
+                status: newTicket.status,
+                description: newTicket.description,
+            };
+            tickets.push(ticket);
+            res.status(200).send(ticket);
+        } else {
+            res.status(405).send(undefined);
+        }
     } else if (req.method == "PUT") {
+        const update = JSON.parse(req.body);
+        if ("id" in update) {
+            const index = tickets.findIndex((d) => d?.id == update.id);
+            if (index != -1) {
+                if ("subject" in update)
+                    tickets[index].subject = update.subject;
+                if ("priority" in update)
+                    tickets[index].priority = update.priority;
+                if ("status" in update) tickets[index].status = update.status;
+                if ("description" in update)
+                    tickets[index].description = update.description;
+                res.status(200).send(tickets[index]);
+            } else {
+                res.status(404).send(undefined);
+            }
+        } else {
+            res.status(405).send(undefined);
+        }
     }
 }
